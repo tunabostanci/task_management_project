@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Management Tool</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        .task-container { display: flex; flex-wrap: wrap; gap: 15px; }
+        .task-card { 
+            background: white; padding: 15px; border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 250px; 
+        }
+        .status-done { border-left: 5px solid green; }
+        .status-todo { border-left: 5px solid orange; }
+    </style>
+</head>
+<body>
+    <h1>Görev Listem</h1>
+    <div style="margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px;">
+    <h3>Yeni Görev Ekle</h3>
+    <input type="text" id="taskTitle" placeholder="Görev Başlığı" style="padding: 5px;">
+    <input type="text" id="taskDesc" placeholder="Açıklama" style="padding: 5px;">
+    <button onclick="addTask()">Ekle</button>
+</div>
+    <div id="tasks" class="task-container">Yükleniyor...</div>
+
+    <script>
+        // Backend API'mizden verileri çeken fonksiyon
+        async function fetchTasks() {
+            try {
+                const response = await fetch('/api/tasks');
+                const tasks = await response.json();
+                
+                const taskDiv = document.getElementById('tasks');
+                taskDiv.innerHTML = ''; // "Yükleniyor" yazısını temizle
+
+                tasks.forEach(task => {
+                    const card = document.createElement('div');
+                    card.className = `task-card status-${task.status}`;
+                    card.innerHTML = `
+                        <h3>${task.title}</h3>
+                        <p>${task.description}</p>
+                        <small>Durum: ${task.status}</small>
+                    `;
+                    taskDiv.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Veri çekilemedi:", err);
+            }
+        }
+
+        fetchTasks();
+
+        async function addTask() {
+    const title = document.getElementById('taskTitle').value;
+    const description = document.getElementById('taskDesc').value;
+
+    const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description })
+    });
+
+    if (response.ok) {
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('taskDesc').value = '';
+        fetchTasks(); // Listeyi yenile
+    }
+}
+    </script>
+</body>
+</html>
