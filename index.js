@@ -38,6 +38,68 @@ app.post('/api/tasks', async (req, res) => {
     res.status(500).json({ error: 'Görev eklenirken bir hata oluştu.' });
   }
 });
+app.delete('/api/tasks', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM public.tasks');
+    res.json({ message: 'Tüm görevler başarıyla silindi.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Görevler silinirken bir hata oluştu.' });
+  }
+});
+app.delete('/api/tasks/:id', async (req, res) => {
+  const taskId = req.params.id;
+  try {
+    const query = 'DELETE FROM public.tasks WHERE id = $1 RETURNING *';
+    const values = [taskId];
+    const result = await pool.query(query, values);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Görev bulunamadı.' });
+
+    }
+    res.json({ message: 'Görev başarıyla silindi.', task: result.rows[0] });
+  }
+  catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Görev silinirken bir hata oluştu.' });
+  }
+});
+
+// Log registered routes for debugging
+if (app._router && app._router.stack) {
+  const routes = app._router.stack
+    .filter(r => r.route)
+    .map(r => {
+      const methods = Object.keys(r.route.methods).join(',').toUpperCase();
+      return `${methods} ${r.route.path}`;
+    });
+  console.log('Registered routes:\n' + routes.join('\n'));
+}
+
+// Test rotası
+app.all('/api/tasks/3/status', (req, res) => {
+    res.send("Rota çalışıyor, metod: " + req.method);
+});
+// Update task status
+app.put('/api/tasks/:id/status', async (req, res) => {
+  console.log("Backend: İstek ulaştı! ID:", req.params.id);
+  const taskId = req.params.id;
+  const { status } = req.body;
+  if (!status) return res.status(400).json({ error: 'Status alanı gerekli.' });
+  try {
+    const query = 'UPDATE public.tasks SET status = $1 WHERE id = $2 RETURNING *';
+    const values = [status, taskId];
+    const result = await pool.query(query, values);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Görev bulunamadı.' });
+    }
+    res.json({ message: 'Görev durumu başarıyla güncellendi.', task: result.rows[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Görev durumu güncellenirken bir hata oluştu.' });
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Sunucu http://localhost:${port} adresinde çalışıyor`);

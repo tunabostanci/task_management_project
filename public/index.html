@@ -21,6 +21,7 @@
     <input type="text" id="taskTitle" placeholder="Görev Başlığı" style="padding: 5px;">
     <input type="text" id="taskDesc" placeholder="Açıklama" style="padding: 5px;">
     <button onclick="addTask()">Ekle</button>
+    <button onclick="deleteAll()" style="background:#c0392b;color:white;border:none;padding:6px 8px;border-radius:4px;cursor:pointer;margin-left:10px;">Tümünü Sil</button>
 </div>
     <div id="tasks" class="task-container">Yükleniyor...</div>
 
@@ -37,10 +38,16 @@
                 tasks.forEach(task => {
                     const card = document.createElement('div');
                     card.className = `task-card status-${task.status}`;
+                    card.id = `task-${task.id}`;
+                    card.dataset.id = task.id;
                     card.innerHTML = `
                         <h3>${task.title}</h3>
                         <p>${task.description}</p>
                         <small>Durum: ${task.status}</small>
+                                                <div style="margin-top:8px; display:flex; gap:8px;">
+                                                    <button onclick="deleteTask(${task.id})" style="background:#e74c3c;color:white;border:none;padding:6px 8px;border-radius:4px;cursor:pointer;">Sil</button>
+                                                    <button onclick="toggleStatus(${task.id}, '${task.status}')" style="background:#2ecc71;color:white;border:none;padding:6px 8px;border-radius:4px;cursor:pointer;">Durum Değiştir</button>
+                                                </div>
                     `;
                     taskDiv.appendChild(card);
                 });
@@ -65,6 +72,61 @@
         document.getElementById('taskTitle').value = '';
         document.getElementById('taskDesc').value = '';
         fetchTasks(); // Listeyi yenile
+    }
+}
+
+// Görevi silmek için istemci tarafı fonksiyonu
+async function deleteTask(id) {
+    if (!confirm('Bu görevi silmek istediğinize emin misiniz?')) return;
+    try {
+        const res = await fetch('/api/tasks/' + id, { method: 'DELETE' });
+        if (res.ok) {
+            const el = document.getElementById('task-' + id);
+            if (el) el.remove();
+        } else {
+            const err = await res.json().catch(()=>({}));
+            alert('Görev silinemedi.' + (err && err.error ? ('\n' + err.error) : ''));
+        }
+    } catch (e) {
+        console.error('Silme hatası:', e);
+        alert('Silme sırasında bir hata oluştu. Konsolu kontrol edin.');
+    }
+}
+async function deleteAll() {
+    if (!confirm('Tüm görevleri silmek istediğinize emin misiniz?')) return;
+    try {
+        // Dikkat: URL aynı, sadece ID yok ve metod DELETE
+        const res = await fetch('/api/tasks', { method: 'DELETE' }); 
+        if (res.ok) {
+            fetchTasks(); 
+        } else {
+            alert('Silinemedi');
+        }
+    } catch (e) {
+        console.error('Hata:', e);
+    }
+}
+
+// Toggle task status between 'todo' and 'done'
+async function toggleStatus(id, currentStatus) {
+    console.log("İstek atılan URL:", '/api/tasks/' + id + '/status');
+    const newStatus = currentStatus === 'todo' ? 'done' : 'todo';
+    try {
+        const res = await fetch('/api/tasks/' + id + '/status', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+            // Refresh task list to reflect updated status
+            fetchTasks();
+        } else {
+            const err = await res.json().catch(()=>({}));
+            alert('Durum değiştirilemedi.' + (err && err.error ? ('\n' + err.error) : ''));
+        }
+    } catch (e) {
+        console.error('Durum değiştirme hatası:', e);
+        alert('Durum değiştirme sırasında bir hata oluştu. Konsolu kontrol edin.');
     }
 }
     </script>
