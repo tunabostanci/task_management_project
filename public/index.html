@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Task Manager</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         :root {
             --bg-color: #f0f2f5;
@@ -127,7 +128,17 @@
         .btn-del:hover { background: var(--danger); color: white; }
         .btn-toggle { background: #eafaf1; color: var(--success); }
         .btn-toggle:hover { background: var(--success); color: white; }
-
+        
+        .task-card {
+            cursor: grab;
+        }
+        .task-card:active {
+            cursor: grabbing;
+        }
+        .sortable-ghost {
+            opacity: 0.4;
+            border: 2px dashed var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -221,6 +232,27 @@ async function deleteAll() {
     fetchTasks();
 }
         fetchTasks();
-    </script>
+// Kartları sürüklenebilir yap
+const taskList = document.getElementById('tasks');
+new Sortable(taskList, {
+    animation: 150,
+    ghostClass: 'sortable-ghost', // Sürüklerken şeffaf görünen sınıf
+    onEnd: async function () {
+        // Sıralama değiştiğinde yeni sıralamayı al
+        const items = Array.from(taskList.children);
+        const newOrder = items.map((item, index) => ({
+            id: item.dataset.id,
+            position: index
+        }));
+
+        // Yeni sıralamayı backend'e gönder
+        await fetch('/api/tasks/reorder', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order: newOrder })
+        });
+    }
+});
+</script>
 </body>
 </html>

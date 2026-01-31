@@ -99,6 +99,25 @@ app.put('/api/tasks/:id/status', async (req, res) => {
     res.status(500).json({ error: 'Görev durumu güncellenirken bir hata oluştu.' });
   }
 });
+app.put('/api/tasks/reorder', async (req, res) => {
+    const { order } = req.body; // [{id: 1, position: 0}, {id: 2, position: 1}, ...]
+    try {
+        // Tüm sıralamaları güncelle (Transaction kullanmak daha sağlıklıdır)
+        const promises = order.map(item => 
+            pool.query('UPDATE tasks SET position = $1 WHERE id = $2', [item.position, item.id])
+        );
+        await Promise.all(promises);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Sıralama güncellenemedi.' });
+    }
+});
+
+// Listeleme rotanı da pozisyona göre sıralanacak şekilde güncelle:
+app.get('/api/tasks', async (req, res) => {
+    const result = await pool.query('SELECT * FROM tasks ORDER BY position ASC, id DESC');
+    res.json(result.rows);
+});
 
 
 app.listen(port, () => {
