@@ -16,18 +16,8 @@ app.use(cors());
 app.use(express.static('public'));
 app.use(express.json());
 
-// GÖREVLERİ LİSTELE (Sadece tek bir GET rotası bırakıldı)
-app.get('/api/tasks', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM tasks ORDER BY position ASC, id DESC');
-    res.json(result.rows);
-  } catch (err) {
-    console.error("Veri çekme hatası:", err.code, err.message);
-    res.status(500).json({ error: 'Görevler yüklenemedi.' });
-  }
-});
-//dummy database for testing
-app.get('/kur-veritabani', async (req, res) => {
+// GEÇİCİ KURULUM ROTASI
+app.get('/db-setup-ozel', async (req, res) => {
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS tasks (
@@ -38,11 +28,24 @@ app.get('/kur-veritabani', async (req, res) => {
         position INTEGER DEFAULT 0
       );
     `);
-    res.send("<h1>Başarılı!</h1><p>Tablo oluşturuldu veya zaten var.</p>");
+    res.send("<h1>Başarılı!</h1><p>Tablo canlı veritabanında oluşturuldu.</p>");
   } catch (err) {
-    res.status(500).send("<h1>Hata Oluştu!</h1><p>" + err.message + "</p>");
+    console.error("Kurulum hatası:", err);
+    res.status(500).send("Hata: " + err.message);
   }
 });
+
+// GÖREVLERİ LİSTELE (Sadece tek bir GET rotası bırakıldı)
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM tasks ORDER BY position ASC, id DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Veri çekme hatası:", err.code, err.message);
+    res.status(500).json({ error: 'Görevler yüklenemedi.' });
+  }
+});
+
 
 // GÖREV EKLE
 app.post('/api/tasks', async (req, res) => {
