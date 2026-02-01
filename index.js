@@ -26,6 +26,23 @@ app.get('/api/tasks', async (req, res) => {
     res.status(500).json({ error: 'Görevler yüklenemedi.' });
   }
 });
+//dummy database for testing
+app.get('/kur-veritabani', async (req, res) => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tasks (
+        id SERIAL PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        status TEXT DEFAULT 'todo',
+        position INTEGER DEFAULT 0
+      );
+    `);
+    res.send("<h1>Başarılı!</h1><p>Tablo oluşturuldu veya zaten var.</p>");
+  } catch (err) {
+    res.status(500).send("<h1>Hata Oluştu!</h1><p>" + err.message + "</p>");
+  }
+});
 
 // GÖREV EKLE
 app.post('/api/tasks', async (req, res) => {
