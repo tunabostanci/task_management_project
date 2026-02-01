@@ -1,17 +1,19 @@
 require('dotenv').config(); // .env dosyanı okur
 const express = require('express');
 const { Pool } = require('pg');
+const cors = require('cors');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Veritabanı bağlantı havuzu
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: 'localhost',
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // Render/Bulut veritabanları için bu satır zorunludur
+  }
 });
+
+app.use(cors());
 
 // HTML dosyalarını koyacağın klasörü tanıtıyoruz
 app.use(express.static('public'));
@@ -19,7 +21,7 @@ app.use(express.json());
 // JSON verilerini tarayıcıda görmek için endpoint
 app.get('/api/tasks', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM public.tasks ORDER BY id ASC');
+    const result = await pool.query('SELECT * FROM tasks ORDER BY id ASC');
     res.json(result.rows); 
   } catch (err) {
     console.error("Hata:", err.message);
@@ -29,7 +31,7 @@ app.get('/api/tasks', async (req, res) => {
 app.post('/api/tasks', async (req, res) => {
   const { title, description } = req.body;
   try {
-    const query = 'INSERT INTO public.tasks (title, description, status) VALUES ($1, $2, $3) RETURNING *';
+    const query = 'INSERT INTO tasks (title, description, status) VALUES ($1, $2, $3) RETURNING *';
     const values = [title, description, 'todo'];
     const result = await pool.query(query, values);
     res.status(201).json(result.rows[0]);
@@ -40,7 +42,7 @@ app.post('/api/tasks', async (req, res) => {
 });
 app.delete('/api/tasks', async (req, res) => {
   try {
-    await pool.query('DELETE FROM public.tasks');
+    await pool.query('DELETE FROM tasks');
     res.json({ message: 'Tüm görevler başarıyla silindi.' });
   } catch (err) {
     console.error(err);
@@ -50,7 +52,7 @@ app.delete('/api/tasks', async (req, res) => {
 app.delete('/api/tasks/:id', async (req, res) => {
   const taskId = req.params.id;
   try {
-    const query = 'DELETE FROM public.tasks WHERE id = $1 RETURNING *';
+    const query = 'DELETE FROM tasks WHERE id = $1 RETURNING *';
     const values = [taskId];
     const result = await pool.query(query, values);
     if (result.rowCount === 0) {
@@ -87,7 +89,7 @@ app.put('/api/tasks/:id/status', async (req, res) => {
   const { status } = req.body;
   if (!status) return res.status(400).json({ error: 'Status alanı gerekli.' });
   try {
-    const query = 'UPDATE public.tasks SET status = $1 WHERE id = $2 RETURNING *';
+    const query = 'UPDATE tasks SET status = $1 WHERE id = $2 RETURNING *';
     const values = [status, taskId];
     const result = await pool.query(query, values);
     if (result.rowCount === 0) {
@@ -121,5 +123,5 @@ app.get('/api/tasks', async (req, res) => {
 
 
 app.listen(port, () => {
-  console.log(`Sunucu http://localhost:${port} adresinde çalışıyor`);
+  console.log(`Sunucu ${port} adresinde çalışıyor`);
 });
