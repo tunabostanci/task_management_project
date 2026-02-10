@@ -192,7 +192,7 @@
                     card.id = `task-${task.id}`;
                     
                     card.innerHTML = `
-                        <button class="btn-edit-top" onclick="openEditModal(${task.id}, '${task.title}', '${task.description}')">
+                        <button class="btn-edit-top" onclick="editTask(${task.id}, '${task.title}', '${task.description}')">
                             ✎
                         </button>
                         <div>
