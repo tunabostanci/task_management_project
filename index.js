@@ -105,6 +105,30 @@ app.put('/api/tasks/:id/status', async (req, res) => {
   }
 });
 
+//edit task
+
+app.put('/api/tasks/:id', async (req, res) => {
+  const { title, description } = req.body;
+  const { id } = req.params; // ID'yi buradan alıyoruz
+
+  try {
+    const result = await pool.query(
+      'UPDATE tasks SET title = $1, description = $2 WHERE id = $3 RETURNING *',
+      [title, description, id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Görev bulunamadı.' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Güncelleme hatası.' });
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Sunucu ${port} portunda hazır.`);
 });

@@ -83,6 +83,7 @@
 
         /* Kart Tasarımı */
         .task-card { 
+            
             background: var(--card-bg); 
             padding: 20px; 
             border-radius: 12px; 
@@ -139,6 +140,22 @@
             opacity: 0.4;
             border: 2px dashed var(--primary);
         }
+        .btn-edit-top {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s, transform 0.2s;
+        }
+
+        .btn-edit-top:hover {
+            color: #007bff; /* Üzerine gelince mavi olur */
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -175,6 +192,9 @@
                     card.id = `task-${task.id}`;
                     
                     card.innerHTML = `
+                        <button class="btn-edit-top" onclick="openEditModal(${task.id}, '${task.title}', '${task.description}')">
+                            ✎
+                        </button>
                         <div>
                             <span class="status-badge">${task.status === 'todo' ? 'Yapılacak' : 'Tamamlandı'}</span>
                             <h3>${task.title}</h3>
@@ -214,6 +234,33 @@ async function deleteTask(id) {
     if (!confirm('Silmek istediğine emin misin?')) return;
     const res = await fetch('/api/tasks/' + id, { method: 'DELETE' });
     if (res.ok) fetchTasks();
+}
+async function editTask(id, currentTitle, currentDescription) {
+    const newTitle = prompt("Görevi Düzenle:", currentTitle);
+    const newDescription = prompt("Açıklamayı Düzenle:", currentDescription);
+    
+    // Kullanıcı iptal ederse veya hiçbir şey yazmadan tamama basarsa durdur
+    if (newTitle === null || newTitle.trim() === "") return; 
+
+    try {
+        const response = await fetch(`/api/tasks/${id}`, {
+            method: 'PUT', // Backend'de app.put('/api/tasks/:id', ...) şeklinde tanımlı olmalı
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                title: newTitle.trim(),
+                description: newDescription.trim()
+            })
+        });
+
+        if (response.ok) {
+            fetchTasks(); // Başarılıysa listeyi yenile
+        } else {
+            alert("Güncelleme sırasında bir hata oluştu.");
+        }
+    } catch (error) {
+        console.error("Hata:", error);
+        alert("Sunucuya bağlanılamadı.");
+    }
 }
 
 async function toggleStatus(id, currentStatus) {
