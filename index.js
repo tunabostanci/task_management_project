@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.static('public'));
 app.use(express.json());
 
-// GEÇİCİ KURULUM ROTASI
+
 app.get('/db-setup-ozel', async (req, res) => {
   try {
     await pool.query(`
@@ -35,7 +35,7 @@ app.get('/db-setup-ozel', async (req, res) => {
   }
 });
 
-// GÖREVLERİ LİSTELE (Sadece tek bir GET rotası bırakıldı)
+
 app.get('/api/tasks', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM tasks ORDER BY position ASC, id DESC');
@@ -61,14 +61,14 @@ app.post('/api/tasks', async (req, res) => {
   }
 });
 
-// SIRALAMAYI GÜNCELLE (Daha güvenli yöntem)
+
 app.put('/api/tasks/reorder', async (req, res) => {
   const { order } = req.body;
-  const client = await pool.connect(); // Transaction için client kullanıyoruz
+  const client = await pool.connect(); 
   try {
     await client.query('BEGIN');
     for (const item of order) {
-      await client.query('UPDATE tasks SET position = $1 WHERE id = $2', [item.position, item.id]);
+      await client.query('UPDATE tasks SET position = $1 WHERE id = $2', [item.position,parseInt(item.id)]);
     }
     await client.query('COMMIT');
     res.json({ success: true });
@@ -81,7 +81,7 @@ app.put('/api/tasks/reorder', async (req, res) => {
   }
 });
 
-// GÖREV SİL (ID ile)
+
 app.delete('/api/tasks/:id', async (req, res) => {
   const taskId = req.params.id;
   try {
@@ -93,7 +93,7 @@ app.delete('/api/tasks/:id', async (req, res) => {
   }
 });
 
-// DURUM GÜNCELLE
+
 app.put('/api/tasks/:id/status', async (req, res) => {
   const { status } = req.body;
   try {
@@ -109,7 +109,7 @@ app.put('/api/tasks/:id/status', async (req, res) => {
 
 app.put('/api/tasks/:id', async (req, res) => {
   const { title, description } = req.body;
-  const { id } = req.params; // ID'yi buradan alıyoruz
+  const { id } = req.params; 
 
   try {
     const result = await pool.query(

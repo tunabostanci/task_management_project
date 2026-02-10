@@ -178,7 +178,7 @@
         </div>
 
     <script>
-        // Backend fonksiyonların aynı kalıyor, sadece fetchTasks içindeki HTML üretimini güncelliyoruz
+       
         async function fetchTasks() {
             try {
                 const response = await fetch('/api/tasks');
@@ -190,7 +190,7 @@
                     const card = document.createElement('div');
                     card.className = `task-card status-${task.status}`;
                     card.id = `task-${task.id}`;
-                    
+                    card.dataset.id = task.id;
                     card.innerHTML = `
                         <button class="btn-edit-top" onclick="editTask(${task.id}, '${task.title}', '${task.description}')">
                             ✎
@@ -238,13 +238,12 @@ async function deleteTask(id) {
 async function editTask(id, currentTitle, currentDescription) {
     const newTitle = prompt("Görevi Düzenle:", currentTitle);
     const newDescription = prompt("Açıklamayı Düzenle:", currentDescription);
-    
-    // Kullanıcı iptal ederse veya hiçbir şey yazmadan tamama basarsa durdur
+   
     if (newTitle === null || newTitle.trim() === "") return; 
 
     try {
         const response = await fetch(`/api/tasks/${id}`, {
-            method: 'PUT', // Backend'de app.put('/api/tasks/:id', ...) şeklinde tanımlı olmalı
+            method: 'PUT', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 title: newTitle.trim(),
@@ -253,7 +252,7 @@ async function editTask(id, currentTitle, currentDescription) {
         });
 
         if (response.ok) {
-            fetchTasks(); // Başarılıysa listeyi yenile
+            fetchTasks();
         } else {
             alert("Güncelleme sırasında bir hata oluştu.");
         }
@@ -279,11 +278,11 @@ async function deleteAll() {
     fetchTasks();
 }
         fetchTasks();
-// Kartları sürüklenebilir yap
+
 const taskList = document.getElementById('tasks');
 new Sortable(taskList, {
     animation: 150,
-    ghostClass: 'sortable-ghost', // Sürüklerken şeffaf görünen sınıf
+    ghostClass: 'sortable-ghost',
     onEnd: async function () {
         // Sıralama değiştiğinde yeni sıralamayı al
         const items = Array.from(taskList.children);
