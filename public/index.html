@@ -192,15 +192,23 @@
                     card.id = `task-${task.id}`;
                     card.dataset.id = task.id;
                     card.innerHTML = `
-                        <button class="btn-edit-top" onclick="editTask(${task.id}, '${task.title}', '${task.description}')">
+                        <button class="btn-edit-top" onclick="enableEditMode(${task.id})">
                             ✎
                         </button>
-                        <div>
+                        <div id="view-container-${task.id}">
                             <span class="status-badge">${task.status === 'todo' ? 'Yapılacak' : 'Tamamlandı'}</span>
                             <h3>${task.title}</h3>
                             <p>${task.description || 'Açıklama belirtilmedi.'}</p>
                         </div>
-                        <div class="card-actions">
+                        <div id="edit-container-${task.id}" style="display:none; flex-direction:column; gap:8px;">
+                            <input type="text" id="edit-title-${task.id}" value="${task.title}" style="width:90%">
+                            <textarea id="edit-desc-${task.id}" style="width:90%; font-family:inherit; padding:8px; border-radius:8px; border:1px solid #ddd;">${task.description || ''}</textarea>
+                            <div class="card-actions">
+                                <button class="btn-sm btn-toggle" onclick="saveEdit(${task.id})">Kaydet</button>
+                                <button class="btn-sm btn-del" onclick="fetchTasks()">İptal</button>
+                            </div>
+                        </div>
+                        <div class="card-actions" id="actions-${task.id}">
                             <button class="btn-sm btn-toggle" onclick="toggleStatus(${task.id}, '${task.status}')">
                                 ${task.status === 'todo' ? 'Tamamla' : 'Geri Al'}
                             </button>
@@ -235,17 +243,23 @@ async function deleteTask(id) {
     const res = await fetch('/api/tasks/' + id, { method: 'DELETE' });
     if (res.ok) fetchTasks();
 }
-async function editTask(id, currentTitle, currentDescription) {
-    const newTitle = prompt("Görevi Düzenle:", currentTitle);
-    const newDescription = prompt("Açıklamayı Düzenle:", currentDescription);
-   
-    if (newTitle === null || newTitle.trim() === "") return; 
+function enableEditMode(id) {
+    document.getElementById(`view-container-${id}`).style.display = 'none';
+    document.getElementById(`actions-${id}`).style.display = 'none';
+    document.getElementById(`edit-container-${id}`).style.display = 'flex';
+}
+
+async function saveEdit(id) {
+    const newTitle = document.getElementById(`edit-title-${id}`).value;
+    const newDescription = document.getElementById(`edit-desc-${id}`).value;
+
+    if (!newTitle.trim()) return alert("Başlık boş olamaz");
 
     try {
         const response = await fetch(`/api/tasks/${id}`, {
-            method: 'PUT', 
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 title: newTitle.trim(),
                 description: newDescription.trim()
             })
@@ -254,14 +268,12 @@ async function editTask(id, currentTitle, currentDescription) {
         if (response.ok) {
             fetchTasks();
         } else {
-            alert("Güncelleme sırasında bir hata oluştu.");
+            alert("Güncelleme hatası.");
         }
     } catch (error) {
         console.error("Hata:", error);
-        alert("Sunucuya bağlanılamadı.");
     }
 }
-
 async function toggleStatus(id, currentStatus) {
     const newStatus = currentStatus === 'todo' ? 'done' : 'todo';
     await fetch(`/api/tasks/${id}/status`, {
