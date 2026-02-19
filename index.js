@@ -5,6 +5,7 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -18,8 +19,11 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 
-// Serve React build files
-app.use(express.static(path.join(__dirname, 'dist')));
+// Serve React build files (dist folder)
+const distDir = path.join(process.cwd(), 'dist');
+if (fs.existsSync(distDir)) {
+  app.use(express.static(distDir));
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -217,9 +221,9 @@ app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Serve the React app for all non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+// Serve the React app for all non-API routes (catch-all)
+app.use((req, res) => {
+  res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
 });
 
 app.listen(port, () => {
