@@ -19,13 +19,31 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 
-// Serve React build files (dist folder)
-const distDir = path.join(process.cwd(), 'dist');
+// Serve React build files FIRST (static assets)
+const distDir = path.join(__dirname, 'dist');
+console.log('Dist directory:', distDir);
+console.log('Dist exists:', fs.existsSync(distDir));
+
 if (fs.existsSync(distDir)) {
-  app.use(express.static(distDir));
+  app.use(express.static(distDir, { 
+    maxAge: '1d',
+    etag: false 
+  }));
+  console.log('Serving static files from dist');
+} else {
+  console.warn('WARNING: dist folder not found');
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok',
+    timestamp: new Date(),
+    distExists: fs.existsSync(distDir)
+  });
+});
 
 // Middleware to verify JWT
 const authenticateToken = (req, res, next) => {
@@ -221,11 +239,20 @@ app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Serve the React app for all non-API routes (catch-all)
+// Catch-all: Serve React for all non-API routes (MUST be last!)
 app.use((req, res) => {
-  res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
+  const indexPath = path.join(__dirname, 'dist', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send(`
+      <h1>Not Found</h1>
+      <p>dist/index.html not found. Build the React app first.</p>
+      <p>Run: npm run build</p>
+    `);
+  }
 });
 
 app.listen(port, () => {
-  console.log(`Sunucu ${port} portunda hazır.`);
+  console.log(`Server running on port ${port}`);
 });
