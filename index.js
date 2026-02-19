@@ -64,6 +64,12 @@ const authenticateToken = (req, res, next) => {
 // Setup Database Tables
 app.get('/db-setup-ozel', async (req, res) => {
   try {
+    console.log('Setting up database tables...');
+    
+    // Drop tasks table only (to preserve users)
+    await pool.query('DROP TABLE IF EXISTS tasks CASCADE');
+    
+    // Create users table (if not exists)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -73,7 +79,9 @@ app.get('/db-setup-ozel', async (req, res) => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    console.log('✓ Users table ready');
     
+    // Create tasks table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS tasks (
         id SERIAL PRIMARY KEY,
@@ -85,11 +93,16 @@ app.get('/db-setup-ozel', async (req, res) => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    console.log('✓ Tasks table created');
     
-    res.send("<h1>Başarılı!</h1><p>Veritabanı tabloları oluşturuldu.</p>");
+    res.send(`
+      <h1>✅ Başarılı!</h1>
+      <p>Veritabanı tabloları oluşturuldu.</p>
+      <p><a href='/'>Geri Dön</a></p>
+    `);
   } catch (err) {
     console.error("Kurulum hatası:", err);
-    res.status(500).send("Hata: " + err.message);
+    res.status(500).send("❌ Hata: " + err.message);
   }
 });
 
@@ -97,6 +110,12 @@ app.get('/db-setup-ozel', async (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, name } = req.body;
   try {
+    console.log('Register attempt:', email);
+    
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: 'Tüm alanlar gereklidir.' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
       'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING id, email, name',
@@ -105,11 +124,13 @@ app.post('/api/auth/register', async (req, res) => {
     const user = result.rows[0];
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
     res.status(201).json({ token, user });
+    console.log('Registration successful:', email);
   } catch (err) {
+    console.error('Register error:', err.message, err.code);
     if (err.code === '23505') {
       return res.status(400).json({ error: 'Bu email zaten kayıtlı.' });
     }
-    res.status(500).json({ error: 'Kayıt hatası.' });
+    res.status(500).json({ error: 'Kayıt hatası: ' + err.message });
   }
 });
 
@@ -117,6 +138,12 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
+    console.log('Login attempt:', email);
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email ve şifre gereklidir.' });
+    }
+
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Email veya şifre yanlış.' });
@@ -130,8 +157,10 @@ app.post('/api/auth/login', async (req, res) => {
     
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
     res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
+    console.log('Login successful:', email);
   } catch (err) {
-    res.status(500).json({ error: 'Giriş hatası.' });
+    console.error('Login error:', err.message);
+    res.status(500).json({ error: 'Giriş hatası: ' + err.message });
   }
 });
 
@@ -139,14 +168,16 @@ app.post('/api/auth/login', async (req, res) => {
 // GET TASKS FOR CURRENT USER
 app.get('/api/tasks', authenticateToken, async (req, res) => {
   try {
+    console.log('Fetching tasks for user:', req.user.id);
     const result = await pool.query(
       'SELECT * FROM tasks WHERE user_id = $1 ORDER BY position ASC, id DESC',
       [req.user.id]
     );
+    console.log('Tasks found:', result.rows.length);
     res.json(result.rows);
   } catch (err) {
     console.error("Veri çekme hatası:", err.code, err.message);
-    res.status(500).json({ error: 'Görevler yüklenemedi.' });
+    res.status(500).json({ error: 'Görevler yüklenemedi: ' + err.message });
   }
 });
 
@@ -154,13 +185,20 @@ app.get('/api/tasks', authenticateToken, async (req, res) => {
 app.post('/api/tasks', authenticateToken, async (req, res) => {
   const { title, description } = req.body;
   try {
+    console.log('Adding task for user:', req.user.id, 'Title:', title);
+    
+    if (!title || title.trim() === '') {
+      return res.status(400).json({ error: 'Görev başlığı boş olamaz.' });
+    }
+
     const query = 'INSERT INTO tasks (user_id, title, description, status) VALUES ($1, $2, $3, $4) RETURNING *';
-    const values = [req.user.id, title, description, 'todo'];
+    const values = [req.user.id, title, description || '', 'todo'];
     const result = await pool.query(query, values);
+    console.log('Task created:', result.rows[0].id);
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error("Ekleme hatası:", err.message);
-    res.status(500).json({ error: 'Görev eklenirken bir hata oluştu.' });
+    console.error("Ekleme hatası:", err.message, err.code);
+    res.status(500).json({ error: 'Görev eklenirken bir hata oluştu: ' + err.message });
   }
 });
 
