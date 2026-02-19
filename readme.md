@@ -1,10 +1,123 @@
-# 🎯 Modern Task Manager (Full-Stack)
+# Task Manager with React & Authentication
 
-[![Node.js Version](https://img.shields.io/badge/node-v16%2B-green.svg)](https://nodejs.org)
-[![PostgreSQL](https://img.shields.io/badge/database-PostgreSQL-blue.svg)](https://www.postgresql.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+A React-based task management application with user authentication and per-user task isolation.
 
-Kullanıcı dostu, modern arayüzlü ve güvenlik odaklı bir görev yönetim sistemi. Bu proje, temel CRUD operasyonlarını şık bir **Grid Layout** ve güvenli bir **Node.js** backend yapısıyla birleştirir.
+## Setup Instructions
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Environment Variables
+
+Create a `.env` file in the root directory:
+
+```
+DATABASE_URL=postgresql://user:password@localhost:5432/taskdb
+JWT_SECRET=your-super-secret-jwt-key-change-this
+PORT=3000
+```
+
+### 3. Database Setup
+
+1. First, start the Express backend:
+```bash
+npm start
+```
+
+2. Visit `http://localhost:3000/db-setup-ozel` to create tables
+
+3. In another terminal, start the Vite development server:
+```bash
+npm run dev
+```
+
+4. Open `http://localhost:5173` in your browser
+
+## Features
+
+✅ **User Authentication**
+- Register new users
+- Login with email/password
+- JWT token-based auth
+- Password hashing with bcrypt
+
+✅ **User-Specific Tasks**
+- Tasks are isolated per user
+- Create, read, update, delete tasks
+- Change task status (To Do, In Progress, Done)
+- Edit task titles and descriptions
+
+✅ **Protected Routes**
+- Auth page loads first
+- Redirect to login if not authenticated
+- Auto-redirect to tasks if already logged in
+
+## Project Structure
+
+```
+postgre_deneme/
+├── index.js              # Express backend
+├── src/
+│   ├── App.jsx          # Main React component
+│   ├── index.jsx        # React entry point
+│   ├── App.css
+│   ├── index.css
+│   ├── pages/
+│   │   ├── AuthPage.jsx
+│   │   └── TasksPage.jsx
+│   └── styles/
+│       ├── AuthPage.css
+│       └── TasksPage.css
+├── public/
+│   └── index.html       # HTML template
+└── vite.config.js       # Vite configuration
+```
+
+## Running the Application
+
+### Development Mode
+
+**Terminal 1 - Backend:**
+```bash
+npm start
+```
+
+**Terminal 2 - Frontend:**
+```bash
+npm run dev
+```
+
+### Production Build
+
+```bash
+npm run build
+# Then serve with npm start
+```
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+
+### Tasks (Require JWT Token)
+- `GET /api/tasks` - Get user's tasks
+- `POST /api/tasks` - Create new task
+- `PUT /api/tasks/:id` - Update task
+- `DELETE /api/tasks/:id` - Delete task
+- `PUT /api/tasks/:id/status` - Update task status
+- `PUT /api/tasks/reorder` - Reorder tasks
+
+## Technologies Used
+
+- **Frontend**: React 18, React Router, Axios
+- **Backend**: Express.js, PostgreSQL
+- **Auth**: JWT, bcrypt
+- **Build**: Vite
+- **Styling**: CSS (no frameworks)
 
 
 
