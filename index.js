@@ -4,7 +4,7 @@ const { Pool } = require('pg');
 const app = express();
 const port = 3000;
 
-// Veritabanı bağlantı havuzu
+// Veritabanı bağlantı havuzubghuıhjhbhjkjn jhjhjojbjkkjlkşlk
 const pool = new Pool({
   user: process.env.DB_USER,
   host: 'localhost',
