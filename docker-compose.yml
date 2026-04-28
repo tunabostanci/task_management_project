@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: tuna_user
+      POSTGRES_PASSWORD: sifre123
+      POSTGRES_DB: task_db
+    ports:
+      - "5432:5432" # pgAdmin ile dışarıdan bağlanmak istersen diye
+
+  app:
+    build: .
+    ports:
+      - "5000:3000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://tuna_user:sifre123@db:5432/task_db?sslmode=disable
