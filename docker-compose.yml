@@ -7,7 +7,10 @@ services:
       POSTGRES_DB: task_db
     ports:
       - "5432:5432" # pgAdmin ile dışarıdan bağlanmak istersen diye
-
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Düzeltildi: Klasör değil dosya yolu
+       
   app:
     build: .
     ports:
@@ -16,3 +19,6 @@ services:
       - db
     environment:
       DATABASE_URL: postgres://tuna_user:sifre123@db:5432/task_db?sslmode=disable
+
+volumes: # Burası kritik: Volume tanımlarını buraya eklemelisin
+  postgres_data:

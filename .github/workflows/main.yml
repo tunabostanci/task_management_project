@@ -1,0 +1,14 @@
+name : Docker Build & Test
+
+on:
+  push:
+    branches:["main"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker Image
+        run: docker build -t task-management-app .
+      - name: Run Container Test
+        run: | docker run -d -p 5000:3000 --name test-app task-management-app
