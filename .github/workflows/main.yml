@@ -11,4 +11,7 @@ jobs:
       - name: Build Docker Image
         run: docker build -t task-management-app .
       - name: Run Container Test
-        run: | docker run -d -p 5000:3000 --name test-app task-management-app
+        run: | 
+          docker run -d -p 5000:3000 --name test-app task-management-app
+          sleep 5
+          docker ps | grep test-app
