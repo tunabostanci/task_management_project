@@ -1,212 +1,93 @@
-# Task Manager with React & Authentication
+# 🚀 Full-Stack Task Management System
 
-A React-based task management application with user authentication and per-user task isolation.
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![PostgreSQL](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
 
-## Setup Instructions
-
-### 1. Install Dependencies
-
-```bash
-npm install
-```
-
-### 2. Environment Variables
-
-Create a `.env` file in the root directory:
-
-```
-DATABASE_URL=postgresql://user:password@localhost:5432/taskdb
-JWT_SECRET=your-super-secret-jwt-key-change-this
-PORT=3000
-```
-
-### 3. Database Setup
-
-1. First, start the Express backend:
-```bash
-npm start
-```
-
-2. Visit `http://localhost:3000/db-setup-ozel` to create tables
-
-3. In another terminal, start the Vite development server:
-```bash
-npm run dev
-```
-
-4. Open `http://localhost:5173` in your browser
-
-## Features
-
-✅ **User Authentication**
-- Register new users
-- Login with email/password
-- JWT token-based auth
-- Password hashing with bcrypt
-
-✅ **User-Specific Tasks**
-- Tasks are isolated per user
-- Create, read, update, delete tasks
-- Change task status (To Do, In Progress, Done)
-- Edit task titles and descriptions
-
-✅ **Protected Routes**
-- Auth page loads first
-- Redirect to login if not authenticated
-- Auto-redirect to tasks if already logged in
-
-## Project Structure
-
-```
-postgre_deneme/
-├── index.js              # Express backend
-├── src/
-│   ├── App.jsx          # Main React component
-│   ├── index.jsx        # React entry point
-│   ├── App.css
-│   ├── index.css
-│   ├── pages/
-│   │   ├── AuthPage.jsx
-│   │   └── TasksPage.jsx
-│   └── styles/
-│       ├── AuthPage.css
-│       └── TasksPage.css
-├── public/
-│   └── index.html       # HTML template
-└── vite.config.js       # Vite configuration
-```
-
-## Running the Application
-
-### Development Mode
-
-**Terminal 1 - Backend:**
-```bash
-npm start
-```
-
-**Terminal 2 - Frontend:**
-```bash
-npm run dev
-```
-
-### Production Build
-
-```bash
-npm run build
-# Then serve with npm start
-```
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-
-### Tasks (Require JWT Token)
-- `GET /api/tasks` - Get user's tasks
-- `POST /api/tasks` - Create new task
-- `PUT /api/tasks/:id` - Update task
-- `DELETE /api/tasks/:id` - Delete task
-- `PUT /api/tasks/:id/status` - Update task status
-- `PUT /api/tasks/reorder` - Reorder tasks
-
-## Technologies Used
-
-- **Frontend**: React 18, React Router, Axios
-- **Backend**: Express.js, PostgreSQL
-- **Auth**: JWT, bcrypt
-- **Build**: Vite
-- **Styling**: CSS (no frameworks)
-
-
+Modern web teknolojileri ve DevOps pratikleri kullanılarak geliştirilmiş; kullanıcı izolasyonuna sahip, containerize edilmiş ve CI/CD süreçleri ile desteklenen bir görev yönetim sistemi.
 
 ---
 
-## ✨ Öne Çıkan Özellikler
-
-| Özellik | Açıklama |
-| :--- | :--- |
-| 🎨 **Modern UI** | Inter fontu, CSS Grid ve Flexbox ile responsive tasarım. |
-| 🛡️ **Güvenlik** | Parameterized Query yapısı ile SQL Injection koruması. |
-| ⚡ **Hızlı UX** | Fetch API ve asenkron fonksiyonlarla sayfa yenilemeden işlem. |
-| 🌓 **Durum Yönetimi** | Tek tıkla "Yapılacak" ve "Tamamlandı" arası geçiş. |
+## 📸 Proje Ekran Görüntüsü
+![Uygulama Demo](./assets/Animation.gif)
 
 ---
 
-## 🛠️ Teknoloji Yığını
+## 🛠️ Teknolojiler & Araçlar
+* **Frontend:** React (Vite), React Router, Axios
+* **Backend:** Node.js, Express.js (REST API)
+* **Veritabanı:** PostgreSQL
+* **DevOps:** Docker, Docker Compose, GitHub Actions (CI/CD)
+* **Güvenlik:** JWT, bcrypt, Parameterized Queries
 
-* **Frontend:** HTML5, CSS3 (Custom Variables, Grid), JavaScript (ES6+).
-* **Backend:** Node.js & Express (REST API).
-* **Veritabanı:** PostgreSQL & `pg` library.
-* **Güvenlik:** `dotenv` ile ortam değişkenleri yönetimi.
+## 🌟 Öne Çıkan Özellikler
+* **Dockerized Environment:** `docker-compose` ile tek komutla ayağa kaldırılabilen izole ortam.
+* **CI/CD Pipeline:** `GitHub Actions` ile her commit'te otomatik build ve test süreçleri.
+* **Güvenli Auth:** JWT tabanlı güvenli giriş/çıkış ve şifreleme.
+* **Veri İzolasyonu:** `user_id` bazlı ilişkilendirilmiş veritabanı yapısı.
+* **Otomatik Veritabanı:** `init.sql` ile konteyner ilk ayağa kalktığında otomatik tablo kurulumu.
+* **Secrets Management:** `.env` ve GitHub Secrets ile hassas verilerin izolasyonu.
+## 📦 Kurulum ve Çalıştırma
 
----
+Proje **Docker** tabanlıdır, sisteminde Docker Desktop'ın kurulu olduğundan emin ol.
 
-## 📦 Kurulum, Yapılandırma ve Çalıştırma
-
-Aşağıdaki adımları sırasıyla takip ederek projeyi yerel makinenizde ayağa kaldırabilirsiniz:
-
-### 1. Dosyaları Klonlayın ve Bağımlılıkları Yükleyin
+### 1. Depoyu Klonlayın
 ```bash
-git clone <sizin-repo-linkiniz>
-cd task-manager-project
-npm install
+git clone <repo-url>
+cd task-management-project
 ```
-## 2. Veritabanı Şemasını Hazırlayın
-PostgreSQL terminalinizde veya pgAdmin üzerinde önce bir veritabanı oluşturun, ardından şu tablo yapısını kurun:
+### 2. Ortam Değişkenleri (.env)
+### Kök dizinde bir .env dosyası oluştur ve aşağıdaki değişkenleri tanımla:
+```
+POSTGRES_USER=tuna_user
+POSTGRES_PASSWORD=sifre123
+POSTGRES_DB=task_db
+DATABASE_URL=postgres://tuna_user:sifre123@db:5432/task_db?sslmode=disable
+```
+
+### 3. Uygulamayı Başlatın
+Sistemi tek komutla ayağa kaldırabilirsin:
+
+```bash
+docker compose up -d
+```
+
+## 🛡️ DevOps & Güvenlik Mimarisi
+SQL Injection Koruması: Backend tarafında pg kütüphanesi ile Parameterized Queries kullanılarak tüm kullanıcı girdileri sanitize edilmiştir.
+
+Otomasyon: .github/workflows/main.yml dosyası ile her push işleminde Docker imajı otomatik build edilir ve test edilir.
+
+Gizlilik: .env dosyası .gitignore ile korunmaktadır, hassas veriler asla repository'e yüklenmez.
+
+## 🗄️ Veritabanı Şeması
+Sistem ayağa kalkarken init.sql ile şu şema otomatik oluşturulur:
 
 ```SQL
-CREATE TABLE tasks (
+-- 1. Users tablosu 
+CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    status VARCHAR(50) DEFAULT 'todo',
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    name TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 2. Tasks tablosu 
+CREATE TABLE IF NOT EXISTS tasks (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    status TEXT DEFAULT 'todo',
+    position INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+); 
 ```
-## Veritabanı Tablo Yapısı Detayları: 
-| Kolon | Tip | Özellik | Açıklama | 
-| :--- | :--- | :--- | :--- | 
-| id | SERIAL | PRIMARY KEY | Benzersiz görev kimliği. | |
- title | VARCHAR(255) | NOT NULL | Görevin başlığı. | 
- | description| TEXT | - | Görevin detaylı açıklaması. | 
- | status | VARCHAR(50) | DEFAULT 'todo' | Durum: todo veya done. |
+### 👨‍💻 Geliştirici
 
-## 3. Ortam Değişkenlerini Ayarlayın (.env)
-Proje kök dizininde bir .env dosyası oluşturun ve veritabanı bilgilerinizi buraya girin:
+Tuna Bostancı 
 
-```
-DB_USER=postgres_kullanici_adiniz
-DB_NAME=veritabani_adiniz
-DB_PASSWORD=sifreniz
-DB_HOST=localhost
-DB_PORT=5432
-```
+Computer Engineering Student | Full-Stack Developer | DevOps Enthusiast
 
-## 4. Uygulamayı Başlatın
-Her şey hazır olduğunda sunucuyu çalıştırın:
-
-```Bash
-node server.js
-```
-
-Tarayıcınızdan şu adrese giderek uygulamayı kullanmaya başlayabilirsiniz: http://localhost:3000
-
-## 🔒 Güvenlik Yaklaşımı (SQL Injection Koruması)
-Bu projede kullanıcı girdileri hiçbir zaman doğrudan SQL sorgularına gömülmez. Veritabanı güvenliği için Parametreli Sorgular (Parameterized Queries) kullanılır.
-
-### Örnek Güvenli Sorgu:
-
-```JavaScript
-// $1 ve $2 yer tutucuları kullanılarak veri güvenli bir şekilde işlenir.
-const query = 'INSERT INTO tasks (title, description) VALUES ($1, $2)';
-const values = [req.body.title, req.body.description];
-await pool.query(query, values);
-```
-### 📝 Lisans ve Geliştirici
-Bu proje MIT lisansı altında lisanslanmıştır.
-
-## 👨‍💻 Geliştiren:
- Tuna Bostanci
- 
+```Bu proje, modern yazılım geliştirme pratiklerini uygulamak amacıyla geliştirilmiştir.```
