@@ -14,7 +14,9 @@ jobs:
 
       - name: Build Docker Image
         run: docker build -t task-management-app .
-
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Run Container Test
         run: |
           docker run -d -p 5000:3000 --name test-app task-management-app
